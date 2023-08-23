@@ -21,9 +21,15 @@ To clone and run this repository you'll need [Git](https://git-scm.com) and [Nod
 # Clone this repository
 git clone https://github.com/HappyFuther/RestorationCalendar
 # Go into the repository
-cd electron-quick-start
+cd RestorationCalendar
 # Install dependencies
 npm install
+# Install plugins
+npm install sqlite3 --save
+npm install bootstrap --save
+npm install --save @popperjs/core
+npm install electron-pdf-window
+npm install node-notifier
 # Run the app
 npm start
 # Build the app
