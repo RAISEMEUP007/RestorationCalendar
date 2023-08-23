@@ -1,0 +1,49 @@
+{
+  "name": "restoration-calendar",
+  "version": "1.0.0",
+  "description": "Restoration calendar application (x32)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ./main.js",
+    "build": "electron-builder --win --ia32"
+  },
+  "build-win": "electron-packager . --platform=win32 --arch=x32 --extra-resources=./extraResources/* --icon=./icon.ico --out ./dist --overwrite",
+  "repository": "https://github.com/HappyFuther/RestorationCalendar",
+  "keywords": [
+    "Electron",
+    "Custom",
+    "Calendar",
+    "Restoration",
+    "Notification"
+  ],
+  "author": "Genera",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "@electron-forge/cli": "^6.2.1",
+    "electron": "^25.3.2",
+    "electron-builder": "^24.6.3",
+    "electron-reload": "^2.0.0-alpha.1",
+    "electron-reloader": "^1.2.3"
+  },
+  "build": {
+    "asar": true,
+    "files": [
+      "main.js",
+      "index.html",
+      "styles.css",
+      "view.js",
+      "templateprint.html",
+      "bower_components/bootstrap/dist/css/bootstrap.min.css",
+      "resources/**/*"
+    ]
+  },
+  "dependencies": {
+    "@electron/remote": "^2.0.10",
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^5.3.1",
+    "electron-pdf-window": "^1.0.12",
+    "jquery": "^3.7.0",
+    "node-notifier": "^10.0.1",
+    "sqlite3": "^5.1.6"
+  }
+}
