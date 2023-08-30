@@ -1,6 +1,8 @@
-const { end } = require("@popperjs/core");
+// const { end } = require("@popperjs/core");
+const { Modal } = require("bootstrap");
 let $ = require("jquery");
 require('bootstrap');
+require('bootstrap-datepicker');
 
 window.$ = window.jQuery = $;
 var curNotyID = 0;
@@ -287,7 +289,8 @@ function updateContent() {
       showFlag = $("#custRadio").get(0).checked;
       showGCInputs(showFlag);
       var notiDate = new Date(gregDate+" 1:0:0");
-      $("#noti_date").val(notiDate.toLocaleDateString("sv-SE"));
+      // $("#noti_date").val(notiDate.toLocaleDateString("sv-SE"));
+      $("#noti_date").val(getDateFormatStr(notiDate));
       $("#noti_date").change();
       notiDate = new Date();
       notiDate.setSeconds(0);
@@ -299,6 +302,19 @@ function updateContent() {
       $("#noti_desc").val("");
       myModal.toggle();
    });
+}
+
+function getDateFormatStr(dateVal) {
+   if (!(dateVal instanceof Date)) {
+      dateVal = new Date(dateVal + " 1:0:0");
+   }
+   let tmp = dateVal.toString().split(" ");
+   return tmp[1] + " " + tmp[2] * 1 + " " + tmp[3];
+}
+
+function getDateValue(strVal) {
+   let tmp = new Date(dateVal + " 1:0:0");
+   return tmp;
 }
 
 $('#cusYear').on("change", function(e) {
@@ -410,8 +426,15 @@ function allPrint(str) {
 var datepicker;
 var enddatepicker;
 $(document).ready(() => {
+   $('.datepicker').datepicker({
+      format: 'M d yyyy',
+      autoclose: true
+   });
+
    var sDate = new Date();
+
    $("#repeatendcustdate").val("TEMIAA 30 " + (14027 + sDate.getFullYear()));
+
    var endinput = document.getElementById('repeatendcustdate');
    enddatepicker = new TheDatepicker.Datepicker(endinput);
    enddatepicker.options.setInputFormat("M j Y");
@@ -422,6 +445,7 @@ $(document).ready(() => {
    myModal = new bootstrap.Modal(document.getElementById('notyModal'), {
       keyboard: true, focus: true
    });
+
    let nowDate = new Date();
    custDate = new ConvertGregorianToCustom(nowDate.getFullYear(), nowDate.getMonth() + 1, nowDate.getDate());
    $("#cusYear").val(custDate.year);
@@ -429,8 +453,15 @@ $(document).ready(() => {
    gregDate = new ConvertCustomToGregorian(custDate.year, custDate.month, 1);
    $("#gregYear").val(gregDate.year);
    $("#gregMonth").val(gregDate.month);
+   
    updateContent();
    
+   $('#closeNotyDiag').on("click", function(e) {
+      $("#repeatdiag").hide();
+      $("#notytable").show();
+      myModal.hide();
+   });
+
    $('#saveNoty').on("click", function(e) {
       if ($("#repeatdiag").css("display") != "none") {
          $("#dwmyDone").click();
@@ -649,6 +680,7 @@ ipcRenderer.on('removeNotyInfo', (event, result) => {
 
 ipcRenderer.send('getNotyList');
 ipcRenderer.on('getNotyList', (event, result) => {
+   console.log("DB:NotificationList:",result);
    notificationList = result;
    $("#notybody").empty();
    if (result) {
@@ -674,7 +706,7 @@ ipcRenderer.on('getOneNotyInfo', (event, result) => {
       } else {
          $("#btnRadioReminder").get(0).checked = true;
       }
-      $("#noti_date").val(result.notydate);
+      $("#noti_date").val(getDateFormatStr(result.notydate));
       $("#noti_time").val(result.notytime);
       
       showFlag = result.calendartype;
@@ -735,7 +767,7 @@ function getNotyRowString(row) {
       nDay = getCustomDateString(nY, nM, nD) + " " + nDate.toLocaleTimeString();
    }
    else {
-      nDay = nDate.toLocaleString()
+      nDay = getDateFormatStr(nDate) + " " + nDate.toLocaleTimeString();
    }
    eTrStr = "<tr data_id='"+row.id+"'><td>";
    if (row.notytype == 0) {
@@ -851,6 +883,136 @@ function showGCInputs(flag) {
 }
 
 function remarkNotificationDates() {
+   //get a date string before the first day of the displayed month
+   let prevDateStr = "";
+   $("#customCalendar td").each(function(ind) {
+      let eachDate = $(this).attr("data_dateinfo");
+      if (eachDate == undefined) return;
+      if (prevDateStr == "") prevDateStr = eachDate;
+   });
+
+   for (var i=0; i<notificationList.length; i++) {
+      notificationList[i].backupProp1 = notificationList[i].repeatendoccurrences;
+      let repeatEvery = parseInt(notificationList[i].repeatevery);
+      if (isNaN(repeatEvery)) repeatEvery = 0;
+      if (repeatEvery < 1) {
+         continue;
+      }
+      //About each notification determine how many times it has occurred up before the first day of the displayed month, and reduce the number of repeat.
+      if (notificationList[i].repeatendtype == 2) {
+         let remainOccurrence = parseInt(notificationList[i].repeatendoccurrences);
+         if (isNaN(remainOccurrence)) remainOccurrence = 0;
+         if (remainOccurrence <= 0) {
+            continue;
+         } else {
+            let notyDate = new Date(notificationList[i].notydate + " 1:0:0");
+            let endDate = new Date(prevDateStr + " 1:0:0");
+            endDate.setDate(endDate.getDate() - 1);
+            for (let eDay = notyDate.getTime(); eDay < endDate.getTime(); eDay+=24*3600*1000) {
+               let cDateObj = new Date(eDay);
+               cDate = cDateObj.toLocaleDateString('sv-SE');
+               cDay = cDateObj.getDay();
+               custCurDate = new ConvertGregorianToCustom(cDateObj.getFullYear(), cDateObj.getMonth() + 1, cDateObj.getDate());
+               custNotiDate = new ConvertGregorianToCustom(notyDate.getFullYear(), notyDate.getMonth() + 1, notyDate.getDate());
+               //evaluate repeat type (week, month, year, day)
+               let repeatType = notificationList[i].repeatdwmy;
+               if (repeatType == 2) {// week condition
+                  let weekdays = notificationList[i].repeatweekon.split(",");
+   
+                  if (notificationList[i].calendartype==0) {//gregorian calendar
+                     if (weekdays.indexOf(cDay + '') == -1) {
+                        continue;
+                     }
+   
+                     let diffW = Math.floor((cDateObj.getTime()/24/3600/1000-cDateObj.getDay()+7)/7) - Math.floor((notyDate.getTime()/24/3600/1000-notyDate.getDay()+7)/7);
+                     if (diffW % repeatEvery) {
+                        continue;
+                     }
+                  }
+                  else {
+                     //custom calendar
+                     if (weekdays.indexOf((custCurDate.day - 1) % 10 + '') == -1) {
+                        continue;
+                     }
+                     // custNotyDate = new ConvertGregorianToCustom(notyDate.getFullYear(), notyDate.getMonth() + 1, notyDate.getDate());
+                     let diffW = Math.floor((custCurDate.month * 10 + custCurDate.day - 1) / 10) - Math.floor((custNotiDate.month * 10 + custNotiDate.day - 1) / 10);
+                     if (diffW % (repeatEvery)) {
+                        continue;
+                     }
+                  }
+                  
+                  notificationList[i].repeatendoccurrences--;
+               }
+               else if (repeatType == 4) {// year condition ----------- checked
+                  if (notificationList[0].calendartype==0) {//gregorian calendar notification
+                     if (notyDate.getMonth() != cDateObj.getMonth() || notyDate.getDate() != cDateObj.getDate()) {
+                        continue;
+                     }
+                     let diffY = cDateObj.getFullYear() - notyDate.getFullYear();
+                     if (diffY % repeatEvery) {
+                        continue;
+                     }
+                  }
+                  else {//custom calendar notification
+                     if (custCurDate.month != custNotiDate.month || custCurDate.day != custNotiDate.day) {
+                        continue;
+                     }
+                     let diffY = custCurDate.year - custNotiDate.year;
+                     if (diffY % repeatEvery) {
+                        continue;
+                     }
+                  }
+                     
+                  notificationList[i].repeatendoccurrences--;
+               }
+               else if (repeatType == 3) {// month condition   --------------- checked
+                  if (notificationList[i].calendartype == 0) {//gregorian calendar notification
+                     if (notyDate.getDate() != cDateObj.getDate()) {
+                        continue;
+                     }
+                     let diffM = cDateObj.getFullYear() * 12 + cDateObj.getMonth() - notyDate.getFullYear() * 12 - notyDate.getMonth();
+                     if (diffM % repeatEvery) {
+                        continue;
+                     }
+                  }
+                  else {//custom calendar notification
+                     if (custCurDate.month != custNotiDate.month) {
+                        continue;
+                     }
+                     let diffM = custCurDate.year * 12 + custCurDate.month - custNotiDate.year * 12 - custNotiDate.month;
+                     if (diffM % repeatEvery) {
+                        continue;
+                     }
+                  }
+                     
+                  notificationList[i].repeatendoccurrences--;
+               }
+               else if (repeatType == 1) {// day condition
+                  if (notificationList[i].calendartype==0) {//gregorian calendar notification
+                     if (notyDate.getDay() != cDateObj.getDay()) {
+                        continue;
+                     }
+                     let diffD = Math.floor((cDateObj.getTime() - notyDate.getTime()) / 24 / 3600 / 1000);
+                     if (diffD % (repeatEvery * 7)) {
+                        continue;
+                     }
+                  }
+                  else {//custom calendar notification
+                     if (custCurDate.day != custNotiDate.day) {
+                        continue;
+                     }
+                     let diffD = custCurDate.day - custNotiDate.day;
+                     if (diffD % (repeatEvery * 10)) {
+                        continue;
+                     }
+                  }
+                  
+                  notificationList[i].repeatendoccurrences--;
+               }
+            }
+         }
+      }
+   }
    console.log("Notification List:", notificationList);
    $("#customCalendar td").each(function(ind) {
       $(this).children("div").removeClass("rnmark");
@@ -908,8 +1070,8 @@ function remarkNotificationDates() {
                   if (weekdays.indexOf((custCurDate.day - 1) % 10 + '') == -1) {
                      continue;
                   }
-                  custNotyDate = new ConvertGregorianToCustom(notyDate.getFullYear(), notyDate.getMonth() + 1, notyDate.getDate());
-                  let diffW = Math.floor((custCurDate.month * 10 + custCurDate.day - 1) / 10) - Math.floor((custNotyDate.month * 10 + custNotyDate.day - 1) / 10);
+                  // custNotyDate = new ConvertGregorianToCustom(notyDate.getFullYear(), notyDate.getMonth() + 1, notyDate.getDate());
+                  let diffW = Math.floor((custCurDate.month * 10 + custCurDate.day - 1) / 10) - Math.floor((custNotiDate.month * 10 + custNotiDate.day - 1) / 10);
                   if (diffW % (repeatEvery)) {
                      continue;
                   }
@@ -993,10 +1155,6 @@ function remarkNotificationDates() {
                   if (notyDate.getDay() != cDateObj.getDay()) {
                      continue;
                   }
-                  // cDateObj.setHours(1);notyDate.setHours(1);
-                  // cDateObj.setMinutes(1);notyDate.setMinutes(1);
-                  // cDateObj.setSeconds(1);notyDate.setSeconds(1);
-                  // cDateObj.setMilliseconds(1);notyDate.setMilliseconds(1);
                   let diffD = Math.floor((cDateObj.getTime() - notyDate.getTime()) / 24 / 3600 / 1000);
                   if (diffD % (repeatEvery * 7)) {
                      continue;
@@ -1039,4 +1197,11 @@ function remarkNotificationDates() {
          }
       }
    });
+   for (var i=0; i<notificationList.length; i++) {
+      notificationList[i].repeatendoccurrences = notificationList[i].backupProp1;
+   }
+}
+
+function consoleLog() {
+   console.log("Notification Appear Ready!");
 }

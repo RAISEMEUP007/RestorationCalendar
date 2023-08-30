@@ -3402,8 +3402,8 @@ var TheDatepicker;
     })(TitleName = TheDatepicker.TitleName || (TheDatepicker.TitleName = {}));
     var Translator = (function () {
         function Translator() {
-            this.dayOfWeekFullTranslations_ = ['AEMA','AMMA','HOA','DREMA','KEBA','REA','FIDA','LORSA','DROBA','ELPA'];
-            this.dayOfWeekTranslations_ = ['AEM','AMM','HOA','DRE','KEB','REA','FID','LOR','DRO','ELP'];
+            this.dayOfWeekFullTranslations_ = ['DROBA','ELPA','AEMA','AMMA','HOA','DREMA','KEBA','REA','FIDA','LORSA'];
+            this.dayOfWeekTranslations_ = ['DRO','ELP','AEM','AMM','HOA','DRE','KEB','REA','FID','LOR'];
             this.monthTranslations_ = ['ALAAM','OMEN','RAISA','MIA','UNA','RIPA','SPAA','AMIA','DAISA','RA','PIAA','TEMIAA'];
             this.monthShortTranslations_ = ['ALAAM','OMEN','RAISA','MIA','UNA','RIPA','SPAA','AMIA','DAISA','RA','PIAA','TEMIAA'];
             this.titles_ = [

@@ -30,6 +30,7 @@ npm install bootstrap --save
 npm install --save @popperjs/core
 npm install electron-pdf-window
 npm install node-notifier
+npm install bootstrap bootstrap-datepicker
 # Run the app
 npm start
 # Build the app

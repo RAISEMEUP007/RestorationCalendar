@@ -150,24 +150,24 @@ button.btn-cust-unselected {
 
 button.btn-unselected {
     background-color: rgb(185, 210, 235);
-    font-size: 14pt !important;
+    font-size: 13pt !important;
     padding: 1px 10px 1px 10px;
     margin: 0;
 }
 
 #repeatdiag .form-control {
-    font-size: 14pt;
+    font-size: 13pt;
     font-weight: normal;
 }
 
 label.form-check-label {
-    font-size: 14pt;
+    font-size: 13pt;
     padding-top: 0;
     padding-bottom: 0;
 }
 
 input.form-check-input {
-    font-size: 14pt;
+    font-size: 13pt;
     width: 0.7em;
     height: 0.7em;
     margin-top: 0.3em;
@@ -227,4 +227,34 @@ td.gnmark {
 #customCalendar td {
     padding: 0;
     margin: 0;
+}
+
+.datepicker td, .datepicker th {
+    width: 40px !important;
+    height: 30px !important;
+}
+
+/* .datepicker-dropdown {
+    top: 260px !important;
+    left: 383px !important;
+} */
+
+.table-condensed {
+    width: 100%;
+}
+
+.datepicker-months {
+    width: 250px;
+}
+
+.datepicker-years {
+    width: 250px;
+}
+
+.datepicker-centuries {
+    width: 250px;
+}
+
+.datepicker-decades {
+    width: 250px;
 }

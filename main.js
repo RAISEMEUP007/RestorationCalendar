@@ -1,19 +1,22 @@
 const {app, BrowserWindow, Menu, ipcMain, shell, nativeImage, Tray} = require('electron');
 const fs = require('fs');
 const { debuglog } = require('util')
+const { Notification } = require('electron')
 const { remote } = require('electron');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const iconPath = path.join(__dirname, 'resources', 'favicon1.png');
+const iconPath = path.join(__dirname, 'icon.ico');
 
 let needExit = false;
 
 let db = new sqlite3.Database('./database.db');
-const notifier = require('node-notifier');
+// const notifier = require('node-notifier');
 
 // require('electron-reload')(__dirname, {
 //   electron: require(`${__dirname}/node_modules/electron`)
 // });
+
+app.setName('Restoration Calendar');
 
 const menuTemplate = [
   {
@@ -30,12 +33,12 @@ const menuTemplate = [
       app.quit();
     }
   },
-  {
-    label: 'console',
-    click: () => {
-      mainWindow.webContents.openDevTools();
-    }
-  }
+  // {
+  //   label: 'console',
+  //   click: () => {
+  //     mainWindow.webContents.openDevTools();
+  //   }
+  // }
 ];
 
 // Create the menu from the template
@@ -54,8 +57,13 @@ function createWindow () {
   mainWindow = new BrowserWindow({
     width: 1300,
     height: 700,
-    icon: nativeImage.createFromPath(iconPath),
-    title: "Restoration Calendar",
+    icon: path.join(__dirname, 'icon.jpg'),/*[
+      path.join(__dirname, 'icon.png'),
+      path.join(__dirname, 'icon-16.png'),
+      path.join(__dirname, 'icon-32.png'),
+      path.join(__dirname, 'icon-64.png'),
+      path.join(__dirname, 'icon-128.png'),
+    ],*/
     webPreferences: {
       nodeIntegration: true,
       allowPrinting: true,
@@ -63,6 +71,7 @@ function createWindow () {
       enableRemoteModule: true,
     },
     'auto-hide-menu-bar': true,
+    // title: "Restoration Calendar",
   });
   mainWindow.loadURL(`file://${__dirname}/index.html`);
   
@@ -187,9 +196,9 @@ ipcMain.on('registerNotyInfo', (event, data) => {
           });
           
           // notifier.notify({
-          //   title: "Test",
-          //   message: "Description",
-          //   icon: nativeImage.createFromPath(path.join(__dirname, 'resources', 'favicon1.png')),
+          //   title: CustomNotyTypes[data.type] + " : " + data.title,
+          //   message: data.desc + " ",
+          //   icon: nativeImage.createFromPath(path.join(__dirname, 'resources', 'icon.png')),
           //   timeoutType: 'custom',
           //   timeout: 5000 // Display the notification for 5 
           // });
@@ -454,22 +463,36 @@ function showNotification() {
           }
         }
 
-        console.log("Noty will be appear");
+        // console.log("Noty will be appear");
         //register as system notification
         if (isValid) {
-          notifier.notify({
-            title: CustomNotyTypes[rows[i].notytype] + " : " + rows[i].notytitle,
-            message: rows[i].notydesc,
-            icon: nativeImage.createFromPath(path.join(__dirname, 'resources', 'favicon1.png')),
-            timeoutType: 'custom',
-            timeout: 5000 // Display the notification for 5 
-          });
+          let nBody = rows[i].notydesc;
+          if (nBody == "") nBody = " ";
 
-          if (remainOccurrence != -1) {
-            //occurrence is reduced as 1
-            db.run('UPDATE tbl_noty SET repeatendoccurrences=? WHERE id=?', [remainOccurrence, rows[i].id], function(err) {
-            });
+          const notification = {
+            title : CustomNotyTypes[rows[i].notytype] + ": " + rows[i].notytitle,
+            body : nBody,
+            timeoutType : 'default',
+            timeout : 5000,
+            appName : 'Restoration Calendar',
+            icon : nativeImage.createFromPath(path.join(__dirname, 'resources', 'icon.png'))
           }
+          
+          new Notification(notification).show();
+          // notifier.notify({
+          //   title: CustomNotyTypes[rows[i].notytype] + " : " + rows[i].notytitle,
+          //   message: rows[i].notydesc + " ",
+          //   // icon: nativeImage.createFromPath(path.join(__dirname, 'resources', 'icon.png')),
+          //   timeoutType: 'custom',
+          //   timeout: 5000 // Display the notification for 5 
+          // });
+
+          // if (remainOccurrence != -1) {
+          //   //occurrence is reduced as 1
+          //   db.run('UPDATE tbl_noty SET repeatendoccurrences=? WHERE id=?', [remainOccurrence, rows[i].id], function(err) {
+          //   });
+          //   // 
+          // }
         }
       }
     }

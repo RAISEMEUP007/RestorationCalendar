@@ -4,12 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="./styles.css" rel="stylesheet" />
+  <link rel="stylesheet" href="resources/the-datepicker.css">
   <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="./node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css">
   <script src="./node_modules/jquery/dist/jquery.min.js"></script>
   <script src="./node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
   <script src="resources/bootstrap.min.js"></script>
-  <link rel="stylesheet" href="resources/the-datepicker.css">
   <script src="resources/the-datepicker.js"></script>
 
   <title>Restoration Calendar</title>
@@ -113,7 +113,7 @@
                     </div>
                     <div class="col-6 mb-3" style="text-align: left;padding-right: 0;">
                       <!-- <label for="noti_time" class="col-form-label">Date Time</label> -->
-                      <input type="date" class="form-control" id="noti_date" style="text-align: left;">
+                      <input type="text" class="datepicker form-control" id="noti_date" style="text-align: center;">
                       <input type="text" class="form-control" id="noti_cust_date" style="text-align: left;padding: 0; text-align: center;">
                     </div>
                     <div class="col-6 mb-3" style="text-align: left;">
@@ -130,7 +130,7 @@
                     </div>
                     <div class="col-12 mb-3" style="text-align: left;">
                       <!-- <label for="noti_desc" class="col-form-label">Description</label> -->
-                      <textarea class="form-control" id="noti_desc" placeholder="description" rows="3"></textarea>
+                      <textarea class="form-control" id="noti_desc" placeholder="description" rows="4"></textarea>
                     </div>
                   </form>
                 </div>
@@ -238,7 +238,7 @@
                             </div>
                           </div>
                           <div class="col-7">
-                            <input id="repeatenddate" type="date" class="form-control">
+                            <input id="repeatenddate" type="text" class="datepicker form-control">
                             <input id="repeatendcustdate" type="text" class="form-control">
                           </div>
                         </div>
@@ -271,7 +271,7 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-secondary" id="closeNotyDiag">Close</button>
             <button type="button" class="btn btn-primary" id="saveNoty">Save</button>
           </div>
         </div>
